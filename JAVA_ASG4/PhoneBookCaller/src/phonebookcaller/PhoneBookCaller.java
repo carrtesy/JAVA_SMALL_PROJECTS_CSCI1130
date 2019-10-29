@@ -1,5 +1,5 @@
 /*
- *  CSCI1130 Assignment #NUMBER #PROJECTNAME
+ *  CSCI1130 Assignment #4 #PhoneBookCaller
  * 
  *  I declare that the assignment here submitted is original
  *  except for source material explicitly acknowledged,
@@ -17,7 +17,7 @@
  *  
  *  Student Name: Dongmin Kim
  *  Student ID  : 1155139586
- *  Date        : #DATE
+ *  Date        : 2019-10-28
  */
 package phonebookcaller;
 import java.util.HashMap; // for phone book data management
@@ -27,7 +27,8 @@ import javazoom.jl.player.advanced.AdvancedPlayer; // for MP3 stream playing
 
 /**
  *
- * @author ehdal
+ * @author dongmin kim
+ * @since  Oct 28, 2019
  */
 public class PhoneBookCaller {
 
@@ -68,7 +69,12 @@ public class PhoneBookCaller {
         System.out.printf("%-20s %s\n", "Name", "Phone");
         System.out.printf("-------------------- --------------\n");
         /*** student's work here to print the phone book on System.out ***/
-
+        // iterate phoneBook's dataset pairs
+        for (String name : phoneBook.keySet()) {
+            String phone = phoneBook.get(name);
+            System.out.printf("%-20s %s\n", name, phone);
+         }
+        
         return table; // a String representation of the phone book in HTML
     }
     /**
@@ -96,25 +102,91 @@ public class PhoneBookCaller {
         
         return choice;
      }
+    
     public void addContact(String name, String phone) {
         phoneBook.put(name, phone);
     }
- 
+    
+    /*
+        This makeSound function generate sounds according to the given charater 
+    */
+    public void makeSound(char c){
+        // make sound according to the character
+        // 0-9 : make corresponding sound
+        // else : skip
+        
+        switch(c){
+            case '0':
+                playMP3File("DTMF_DialTone_MP3/DTMF-0.mp3");
+                break;
+            case '1':
+                playMP3File("DTMF_DialTone_MP3/DTMF-1.mp3");
+                break;
+            case '2':
+                playMP3File("DTMF_DialTone_MP3/DTMF-2.mp3");
+                break;
+            case '3':
+                playMP3File("DTMF_DialTone_MP3/DTMF-3.mp3");
+                break;
+            case '4':
+                playMP3File("DTMF_DialTone_MP3/DTMF-4.mp3");
+                break;
+            case '5':
+                playMP3File("DTMF_DialTone_MP3/DTMF-5.mp3");
+                break;
+            case '6':
+                playMP3File("DTMF_DialTone_MP3/DTMF-6.mp3");
+                break;
+            case '7':
+                playMP3File("DTMF_DialTone_MP3/DTMF-7.mp3");
+                break;
+            case '8':
+                playMP3File("DTMF_DialTone_MP3/DTMF-8.mp3");
+                break;
+            case '9':
+                playMP3File("DTMF_DialTone_MP3/DTMF-9.mp3");
+                break;
+        }
+    }
+    
     public void call(String name) {
-    // When calling a number, "dial" each digit by playing the corresponding given MP3 recording file:
-    //
-    //"DTMF_DialTone_MP3/DTMF-n.mp3" where n is a digit in 0 – 9.
-    //
+    /*
+       When calling a number, "dial" each digit by playing the corresponding given MP3 recording file:
+       "DTMF_DialTone_MP3/DTMF-n.mp3" where n is a digit in 0 – 9. 
+    */
+    // Get a corresponding string for given name
+    String phone = phoneBook.get(name);
+    int strlen = phone.length();
+    char c;
+    
+    // iterate through the string by character
+    for (int i = 0; i < strlen; i++)
+    {
+        c = phone.charAt(i);
+        System.out.print(c + " ");
+        this.makeSound(c);
+    }
+    System.out.print("\n");
     }
  
     public void savePhoneBook(String filename) {
-        for (String i : phoneBook.keySet()){
-            System.out.println(i);
-        }
+        File file = new File("phonebook.txt");
+        try {
+            FileWriter fw = new FileWriter(file);
+            for (String i : phoneBook.keySet())
+            {
+                fw.write(i+"\n");
+                fw.write(phoneBook.get(i)+"\n");
+            }
+            fw.close();            
+         } catch (IOException e) {
+             e.printStackTrace();
+         }               
+        
     }
  
     public static void playMP3File(String filename) {
- 
+        
         try{
             FileInputStream mp3Stream = new FileInputStream(filename);
             AdvancedPlayer mp3Player = new AdvancedPlayer(mp3Stream);
@@ -122,40 +194,93 @@ public class PhoneBookCaller {
         } catch(Exception e) {
             e.printStackTrace();
         } 
-        
     }
  
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        
+        /*
+            Initialize Variables
+        */
         PhoneBookCaller pbc = new PhoneBookCaller(); 
         int option;
+        String name, phone;
+        boolean name_valid, phone_valid;
         
+        /*
+            Setups
+        */
         pbc.clearAndSetupDefaultPhoneBook();
+        pbc.playMP3File("DTMF_DialTone_MP3/DialTone.mp3");
         
+        /*
+            Loop for user interface
+        */
         while(true){
             option = pbc.showMenu();
+            
+            // Exit condition of interface. input is 0.
             if(option == 0 ) break;
             
             switch(option){
                 case 1:
-                    System.out.println("add contract!");
+                    /*
+                        Option [Add]
+                        Add the new member and phone number
+                        should check null or blank inputs
+                    */
+                    // get inputs
+                    name = JOptionPane.showInputDialog("name");
+                    phone = JOptionPane.showInputDialog("phone");
+                    
+                    // check validity
+                    name_valid = name != null && name.isBlank() == false;
+                    phone_valid = phone != null && phone.isBlank() == false;
+                    
+                    // if inputs are valid, add contact infos.
+                    if(name_valid && phone_valid) pbc.addContact(name, phone);
                     break;
                 case 2:
-                    System.out.println("make a call!");
+                    /*
+                        Option [Call]
+                        Get callee information, check validity, and operate call.
+                    */
+                    
+                    // get input
+                    name = JOptionPane.showInputDialog("Who to call?");
+                    
+                    // check validity: null, blank, also if key is contained in hashmap
+                    name_valid = name != null && name.isBlank() == false && pbc.phoneBook.containsKey(name);
+                    
+                    // if valid, operate call
+                    if(name_valid) {
+                        System.out.printf("Calling %s: ", name);
+                        pbc.call(name);
+                    }
                     break;
                 case 3:
-                    System.out.println("clear all contract!");
+                    /*
+                        Option [Clear]
+                        After checking user confirmation, if answer is yes,
+                        make the phonebook to default state
+                    */
+                    if (JOptionPane.showConfirmDialog(null, "Are you sure?", "Clear ALL contact", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) 
+                    {
+                        pbc.clearAndSetupDefaultPhoneBook();
+                    } 
                     break;
                 case 4:
-                    System.out.println("save all contract!");
+                    /*
+                        Option [Save]
+                        Save the data to file outside named "phonebook.txt"
+                    */
+                    pbc.savePhoneBook("phonebook.txt");
                     break;
             }
+            
         }
-        
-        pbc.playMP3File("DTMF_DialTone_MP3/DialTone.mp3");
         
     }
     
